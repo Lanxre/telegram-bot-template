@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Optional
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -48,3 +48,34 @@ class TelegramSettings(ConfigBase):
 def load_telegram_settings() -> TelegramSettings:
     """Load Telegram settings from environment or .env file."""
     return TelegramSettings.load()
+
+
+class DatabaseSettings(ConfigBase):
+    """Database configuration settings."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
+        env_prefix="db_",
+    )
+
+    name: str = Field(..., min_length=1, description="Database name")
+    user: Optional[str] = Field(..., min_length=1, description="Database user")
+    password: Optional[str] = Field(..., min_length=1, description="Database password")
+    host: Optional[str] = Field(default="localhost", description="Database host")
+    port: Optional[str] = Field(default="5432", description="Database port")
+    driver: Optional[str] = Field(default="aiosqlite", description="Database driver")
+
+    @field_validator("name", "user", "password")
+    @classmethod
+    def non_empty(cls, v: str) -> str:
+        """Ensure fields are non-empty and stripped of whitespace."""
+        if not v.strip():
+            raise ValueError("Field cannot be empty or whitespace")
+        return v.strip()
+        
+def load_database_settings() -> DatabaseSettings:
+    """Load database settings from environment or .env file."""
+    return DatabaseSettings.load()
