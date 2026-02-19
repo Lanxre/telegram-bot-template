@@ -2,6 +2,7 @@ from typing import Self, Optional
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from urllib.parse import quote_plus
 
 from logger import LoggerBuilder
 
@@ -75,6 +76,13 @@ class DatabaseSettings(ConfigBase):
         if not v.strip():
             raise ValueError("Field cannot be empty or whitespace")
         return v.strip()
+    
+    @property
+    def postgresql_url(self) -> str:
+        """Generate PostgreSQL connection URL with URL-encoded credentials."""
+        encoded_user = quote_plus(self.user)
+        encoded_password = quote_plus(self.password)
+        return f"postgresql+{self.driver}://{encoded_user}:{encoded_password}@{self.host}:{self.port}/{self.name}"
         
 def load_database_settings() -> DatabaseSettings:
     """Load database settings from environment or .env file."""

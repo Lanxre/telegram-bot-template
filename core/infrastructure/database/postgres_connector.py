@@ -1,5 +1,4 @@
 import asyncpg
-import re
 from typing import Any, Mapping, Sequence
 
 class PostgresConnector:
@@ -25,7 +24,11 @@ class PostgresConnector:
         pool = await self._get_pool()
         q, p = self._convert_query(query, params)
         await pool.execute(q, *p)
-
+    
+    async def executescript(self, script: str) -> None:
+        pool = await self._get_pool()
+        await pool.execute(script)
+    
     async def fetch_one(self, query: str, params: Mapping[str, Any] | None = None) -> Mapping[str, Any] | None:
         pool = await self._get_pool()
         q, p = self._convert_query(query, params)
@@ -39,3 +42,7 @@ class PostgresConnector:
     async def close(self) -> None:
         if self._pool:
             await self._pool.close()
+    
+    @property
+    def dialect(self) -> str:
+        return "postgresql"

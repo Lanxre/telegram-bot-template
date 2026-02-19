@@ -1,5 +1,7 @@
-import aiosqlite
 from typing import Any, Mapping
+
+import aiosqlite
+
 
 class SQLiteConnector:
     def __init__(self, db_path: str = "bot.db"):
@@ -16,7 +18,9 @@ class SQLiteConnector:
             self._conn.row_factory = aiosqlite.Row
         return self._conn
 
-    async def execute(self, query: str, params: Mapping[str, Any] | None = None) -> None:
+    async def execute(
+        self, query: str, params: Mapping[str, Any] | None = None
+    ) -> None:
         conn = await self._ensure_conn()
         await conn.execute(query, params or {})
         await conn.commit()
@@ -26,7 +30,9 @@ class SQLiteConnector:
         await conn.executescript(script)
         await conn.commit()
 
-    async def fetch_one(self, query: str, params: Mapping[str, Any] | None = None) -> Mapping[str, Any] | None:
+    async def fetch_one(
+        self, query: str, params: Mapping[str, Any] | None = None
+    ) -> Mapping[str, Any] | None:
         conn = await self._ensure_conn()
         async with conn.execute(query, params or {}) as cursor:
             return await cursor.fetchone()
